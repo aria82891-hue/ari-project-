@@ -445,6 +445,38 @@ function restore() {
   if(state.profile) showDashboard(); else show("loginPage");
 }
 restore();
+  // Jika peserta meninggalkan tab/aplikasi saat ujian,
+// ketika kembali akan diarahkan ke halaman utama.
+document.addEventListener("visibilitychange", function () {
+  if (document.visibilityState === "hidden" && state.active) {
+    // Tandai bahwa peserta meninggalkan halaman ujian
+    sessionStorage.setItem("ujian_ditinggalkan", "1");
+  }
+
+  if (document.visibilityState === "visible") {
+    if (sessionStorage.getItem("ujian_ditinggalkan") === "1") {
+      sessionStorage.removeItem("ujian_ditinggalkan");
+
+      // Batalkan sesi ujian yang sedang aktif
+      state.active = null;
+      saveState();
+
+      // Kembali ke halaman utama/dashboard
+      showDashboard();
+    }
+  }
+});
+  history.pushState(null, "", location.href);
+
+window.addEventListener("popstate", function () {
+  if (state.active) {
+    state.active = null;
+    saveState();
+    showDashboard();
+
+    history.pushState(null, "", location.href);
+  }
+});
 </script>
 </div>
 </body>
